@@ -1,0 +1,7 @@
+{
+  "editor.autoIndent": "advanced",
+  "editor.tabSize": 2,
+  "prettier.tabWidth": 2,
+  "editor.formatOnSave": true,
+  "python.formatting.provider": "black",
+}
