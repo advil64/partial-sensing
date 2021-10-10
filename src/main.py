@@ -22,6 +22,35 @@ def solver(dim, prob, agent, complete_grid=None):
   # create gridworld that agent uses to take note of blocks
   discovered_grid = Gridworld(dim)
 
+  # check the agent and act accordingly
+
+# method for 4-neighbor agent
+def update_neighbor_obstacles(curr, discovered_grid, complete_grid, dim):
+  # check the neighbor above the block
+  if curr[0] - 1 >= 0:
+    if complete_grid.gridworld[curr[0] - 1][curr[1]] == 1:
+      discovered_grid.update_grid_obstacle((curr[0] - 1, curr[1]), 1)
+    else:
+      discovered_grid.update_grid_obstacle((curr[0] - 1, curr[1]), 0)
+  # check the neighbor below the block
+  if curr[0] + 1 < dim:
+    if complete_grid.gridworld[curr[0] + 1][curr[1]] == 1:
+      discovered_grid.update_grid_obstacle((curr[0] + 1, curr[1]), 1)
+    else:
+      discovered_grid.update_grid_obstacle((curr[0] + 1, curr[1]), 0)
+  # check the neighbor left of the block
+  if curr[1] - 1 >= 0:
+    if complete_grid.gridworld[curr[0]][curr[1] - 1] == 1:
+      discovered_grid.update_grid_obstacle((curr[0], curr[1] - 1), 1)
+    else:
+      discovered_grid.update_grid_obstacle((curr[0], curr[1] - 1), 0)
+  # check the neighbor right of the block
+  if curr[1] + 1 < dim:
+    if complete_grid.gridworld[curr[0]][curr[1] + 1] == 1:
+      discovered_grid.update_grid_obstacle((curr[0], curr[1] + 1), 1)
+    else:
+      discovered_grid.update_grid_obstacle((curr[0], curr[1] + 1), 0)
+
 
 def main():
   p = argparse.ArgumentParser()
