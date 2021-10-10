@@ -12,7 +12,7 @@ from gridworld import Gridworld
 """
 
 
-def repeated_solver(dim, prob, agent, complete_grid=None):
+def solver(dim, prob, agent, complete_grid=None):
 
   # create a gridworld
   if not complete_grid:
@@ -54,3 +54,7 @@ def main():
   args = p.parse_args()
 
   # call the solver method with the args
+  solver(args.dimension, args.probability, args.agent)
+
+if __name__ == "__main__":
+  main()
