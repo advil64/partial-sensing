@@ -32,8 +32,10 @@ class Agent_3:
       self.cell_info[curr[0]][curr[1]].confirmed = True
       # sense Agent's surroundings to determine number of blocks around
       self.sense_neighbors(self.cell_info[curr[0]][curr[1]], complete_grid) 
-      # update knowledge base of agent using new info
+      # update cell info
       self.update_cell_info(self.cell_info[curr[0]][curr[1]])
+      # Update knowledgebase with new info
+      self.update_knowledgebase(self.cell_info[curr[0]][curr[1]])
 
 
     return path[-1]
@@ -154,9 +156,6 @@ class Agent_3:
       cell.hidden = num_hidden
       cell.confirm_block = num_block
       cell.confirm_empty = num_empty
-
-      # Update knowledgebase with new info
-      self.update_knowledgebase(cell)
     
     def update_knowledgebase(self, cell):
       # if there are not hidden cells, leave
