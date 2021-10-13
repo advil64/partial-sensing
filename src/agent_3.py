@@ -21,7 +21,7 @@ class Agent_3:
     @return list: the last node of the gridworld or the parent node
   '''
   def execute_path(self, path, complete_grid, path_coord):
-    print("Start path")
+    #print("Start path")
     for node in path:
       curr = node.curr_block
       path_coord.remove(curr)
