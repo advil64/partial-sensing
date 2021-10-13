@@ -23,13 +23,13 @@ class Agent_3:
   def execute_path(self, path, complete_grid):
     for node in path:
       curr = node.curr_block
-
+      cell = self.cell_info[curr[0]][curr[1]]
       to_ret = None
 
       # check if path is open
-      if complete_grid.gridworld[curr[0]][curr[1]] == 0:
+      if complete_grid.gridworld[cell.x][cell.y] == 0:
         # sense Agent's surroundings to determine number of blocks around
-        self.sense_neighbors(self.cell_info[curr[0]][curr[1]], complete_grid) 
+        self.sense_neighbors(cell, complete_grid) 
         # update our knowledge of blocked nodes
         self.discovered_grid.update_grid_obstacle(curr, 0)
         # return the last node
@@ -41,28 +41,33 @@ class Agent_3:
         to_ret = node.parent_block
 
       # mark the cell as visited
-      self.cell_info[curr[0]][curr[1]].visited = True
+      cell.visited = True
       # mark cell as a confirmed value because it was visited
-      self.cell_info[curr[0]][curr[1]].confirmed = True
+      cell.confirmed = True
+      # use the new info to draw conclusions about neighbors
+      self.update_neighbors(cell)
 
-      return to_ret
+    return to_ret
 
   def update_neighbors(self, cell):
     
     # add the neighbors of the current cell and itself to the list
-    neighbors = set(cell.get_neighbors(self.cell_info))
+    neighbors = set(cell.get_neighbors(self.cell_info, self.dim))
     neighbors.add(cell)
 
     # loop through the cells and keep looping until neighbors is empty
     while neighbors:
       curr_cell = neighbors.pop()
-      self.update_cell_info(curr_cell)
-      updated_cells = self.update_knowledgebase(curr_cell)
+      changed = self.update_cell_info(curr_cell)
 
-      # update all of the neighbors neighbors by adding those to the set
-      for n in updated_cells:
-        neighbors.update(n.get_neighbors(self.cell_info))
-        neighbors.add(n)
+      # if the cell was visited we have the block sense
+      if curr_cell.visited and changed:
+        updated_cells = self.update_knowledgebase(curr_cell)
+
+        # update all of the neighbors neighbors by adding those to the set
+        for n in updated_cells:
+          neighbors.update(n.get_neighbors(self.cell_info, self.dim))
+          neighbors.add(n)
   
   '''
     This method returns the number of blocked neighbors a given cell has
@@ -71,7 +76,7 @@ class Agent_3:
   '''
   def sense_neighbors(self, cell, complete_grid):
     num_sensed = 0
-    neighbors = cell.get_neighbors(self.cell_info)
+    neighbors = cell.get_neighbors(self.cell_info, self.dim)
 
     # loop through the neighbors to be checked and take the sum (1 is block)
     num_sensed = sum(complete_grid.gridworld[n.x][n.y] for n in neighbors)
@@ -82,12 +87,13 @@ class Agent_3:
   '''
     This method stores the surrounding information of any given cell based on the discovered grid
     @param cell: cell to calculate surroundings
+    @return boolean: indicating if any values have changed
   '''
   def update_cell_info(self, cell):
     num_hidden = 0
     num_block = 0
     num_empty = 0
-    neighbors = cell.get_neighbors(self.cell_info)
+    neighbors = cell.get_neighbors(self.cell_info, self.dim)
 
     # loop through the neighbors to be checked
     for n in neighbors:
@@ -102,20 +108,25 @@ class Agent_3:
       else:
         num_hidden += 1
 
-    cell.hidden = num_hidden
-    cell.confirm_block = num_block
-    cell.confirm_empty = num_empty
+    has_changed = (cell.hidden - num_hidden) or (cell.confirm_block - num_block) or (cell.confirm_empty - num_empty)
+
+    if has_changed:
+      cell.hidden = num_hidden
+      cell.confirm_block = num_block
+      cell.confirm_empty = num_empty
     
-  def update_knowledgebase(self, cell):
+    return has_changed
+    
+  def  update_knowledgebase(self, cell):
 
     updated_cells = []
 
-    # if there are not hidden cells, leave
+    # if there are hidden not cells, leave
     if cell.hidden == 0:
       return updated_cells
     
     # get the neighbors and check to see which are blockers
-    neighbors = cell.get_neighbors(self.cell_info)
+    neighbors = cell.get_neighbors(self.cell_info, self.dim)
 
     # if we know all block cells, update the other cells to be empty
     if cell.block_sense == cell.confirm_block:

@@ -28,7 +28,7 @@ class Cell:
     # indicates the number of confirmed empty cells that surround the current cell
     self.confirm_empty = 0
     # indicates the number of surrounding cells that we do not have information for
-    self.hidden = 0
+    self.hidden = self.neighbors
 
   '''
     Defines equality used for set operations
@@ -46,8 +46,8 @@ class Cell:
     Method checks all directions and returns neighbors depending on location
     @return list: list of neighbors of cell type
   '''
-  def get_neighbors(self, cell_info):
-    check_neighbors = [[0,0], [-1,-1], [-1,0], [-1,1], [0,-1], [0,1], [1,-1], [1,0], [1,1]]
+  def get_neighbors(self, cell_info, dim):
+    check_neighbors = [[-1,-1], [-1,0], [-1,1], [0,-1], [0,1], [1,-1], [1,0], [1,1]]
     neighbors = []
 
     # find all the neighbors for the current cell
@@ -55,6 +55,8 @@ class Cell:
       # the cordinates of the neighbor
       curr_neighbor = (self.x + n[0], self.y + n[1])
       # check bounds
-      if curr_neighbor[0] >= 0 and curr_neighbor[0] < self.dim and curr_neighbor[1] >= 0 and curr_neighbor[0] < self.dim:
+      if curr_neighbor[0] >= 0 and curr_neighbor[0] < dim and curr_neighbor[1] >= 0 and curr_neighbor[1] < dim:
         # add the neighbor cell to our list
         neighbors.append(cell_info[curr_neighbor[0]][curr_neighbor[1]])
+    
+    return neighbors
