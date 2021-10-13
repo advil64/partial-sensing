@@ -117,7 +117,7 @@ class Agent_3:
     
     return has_changed
     
-  def  update_knowledgebase(self, cell):
+  def update_knowledgebase(self, cell):
 
     updated_cells = []
 
