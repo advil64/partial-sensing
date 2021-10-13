@@ -25,6 +25,7 @@ class Agent_3:
       curr = node.curr_block
       cell = self.cell_info[curr[0]][curr[1]]
       to_ret = None
+      bump = False
 
       # check if path is open
       if complete_grid.gridworld[cell.x][cell.y] == 0:
@@ -39,6 +40,8 @@ class Agent_3:
         self.discovered_grid.update_grid_obstacle(curr, 1)
         # return the parent and tell the gridworld to find a new path
         to_ret = node.parent_block
+        # set bump to true to indicate we bumped into an obstacle
+        bump = True
 
       # mark the cell as visited
       cell.visited = True
@@ -46,6 +49,10 @@ class Agent_3:
       cell.confirmed = True
       # use the new info to draw conclusions about neighbors
       self.update_neighbors(cell)
+
+      # if we bumped into an obstacle, then leave the execution
+      if bump:
+        return to_ret
 
     return to_ret
 

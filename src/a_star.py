@@ -25,7 +25,7 @@ def path_planner(start, latest_block, grid, dim, heuristic):
 
         # Check if the goal node was popped
         if curr.curr_block == (dim-1, dim-1):
-            print("Path Found, Processed %s cells" % cells_processed)
+            #print("Path Found, Processed %s cells" % cells_processed)
             path = []
             # we reached the end trace the path back to start
             x = curr
