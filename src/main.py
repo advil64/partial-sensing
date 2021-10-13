@@ -3,6 +3,8 @@ import argparse
 from time import sleep, time
 from gridworld import Gridworld
 from agent_1 import Agent_1
+from agent_2 import Agent_2
+from agent_3 import Agent_3
 from heuristics import manhattan
 from a_star import path_planner
 
@@ -22,8 +24,8 @@ def solver(dim, prob, agent, complete_grid=None):
     complete_grid = Gridworld(dim, prob, False)
     complete_grid.print()
   
-  # create agent
-  agent_object = Agent_1(dim)
+  # create agent according to the argument
+  agent_object = Agent_3(dim)
 
   # total number of cells processed
   total_cells_processed = 0
@@ -54,8 +56,6 @@ def solver(dim, prob, agent, complete_grid=None):
 
   print("Completed in %s seconds" % (time() - starting_time))
   print("Processed %s cells" % total_cells_processed)
-
-  # check the agent and act accordingly
 
 def main():
   p = argparse.ArgumentParser()
