@@ -22,7 +22,7 @@ class Cell:
     # indicates if the agent has made an inference on this cell
     self.confirmed = False
     # indicates the number of obstacles that surround the cell
-    self.block_sense = 0
+    self.block_sense = -1
     # indicate the number of confirmed obstacles that surround the cell
     self.confirm_block = 0
     # indicates the number of confirmed empty cells that surround the current cell

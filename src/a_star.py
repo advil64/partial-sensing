@@ -27,19 +27,22 @@ def path_planner(start, latest_block, grid, dim, heuristic):
         if curr.curr_block == (dim-1, dim-1):
             #print("Path Found, Processed %s cells" % cells_processed)
             path = []
+            path_coord = set()
             # we reached the end trace the path back to start
             x = curr
             while x.curr_block != start:
                 path.append(x)
+                path_coord.add(x.curr_block)
                 x = x.parent_block
             path.append(x)
+            path_coord.add(x.curr_block)
             path.reverse()
-            return (path, cells_processed)
+            return (path, cells_processed, path_coord)
         else:
             check_neighbors(grid, dim, heuristic, curr, fringe, closed)
 
     print("No Path Found")
-    return ([], cells_processed)
+    return ([], cells_processed, set())
         
             
 def check_neighbors(grid, dim, heuristic, curr_node, fringe, closed):

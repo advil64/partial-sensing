@@ -20,9 +20,11 @@ class Agent_3:
     @param complete_grid: the full gridworld to check for obstacles along the way
     @return list: the last node of the gridworld or the parent node
   '''
-  def execute_path(self, path, complete_grid):
+  def execute_path(self, path, complete_grid, path_coord):
+    print("Start path")
     for node in path:
       curr = node.curr_block
+      path_coord.remove(curr)
       cell = self.cell_info[curr[0]][curr[1]]
       to_ret = None
       bump = False
@@ -34,7 +36,7 @@ class Agent_3:
         # update our knowledge of blocked nodes
         self.discovered_grid.update_grid_obstacle(curr, 0)
         # return the last node
-        to_ret = path[-1]
+        to_ret = node
 
       else:
         self.discovered_grid.update_grid_obstacle(curr, 1)
@@ -48,15 +50,23 @@ class Agent_3:
       # mark cell as a confirmed value because it was visited
       cell.confirmed = True
       # use the new info to draw conclusions about neighbors
-      self.update_neighbors(cell)
+      new_confirmed_cells = self.update_neighbors(cell)
+
+      #self.discovered_grid.print()
+      #print()
 
       # if we bumped into an obstacle, then leave the execution
       if bump:
         return to_ret
+      # check if any new confirmed cells introduce block in your path
+      if self.check_block_in_path(path_coord, new_confirmed_cells):
+        return to_ret
 
-    return to_ret
+    return path[-1]
 
   def update_neighbors(self, cell):
+    # set that contains any cell that's been confirmed
+    new_confirmed_cells = set()
     
     # add the neighbors of the current cell and itself to the list
     neighbors = set(cell.get_neighbors(self.cell_info, self.dim))
@@ -67,14 +77,17 @@ class Agent_3:
       curr_cell = neighbors.pop()
       changed = self.update_cell_info(curr_cell)
 
-      # if the cell was visited we have the block sense
-      if curr_cell.visited:
+      # if the cell was visited and we have the block sense, infer and add to knowledge base
+      if curr_cell.visited and curr_cell.block_sense != -1:
         updated_cells = self.update_knowledgebase(curr_cell)
+        new_confirmed_cells.update(updated_cells)
 
         # update all of the neighbors neighbors by adding those to the set
         for n in updated_cells:
           neighbors.update(n.get_neighbors(self.cell_info, self.dim))
           neighbors.add(n)
+
+    return new_confirmed_cells
   
   '''
     This method returns the number of blocked neighbors a given cell has
@@ -153,3 +166,11 @@ class Agent_3:
           updated_cells.append(n)
     
     return updated_cells
+  
+  def check_block_in_path(self, path_coord, new_confirmed_cells):
+    for cell in new_confirmed_cells:
+      if self.discovered_grid.gridworld[cell.x][cell.y] == 1:
+        if (cell.x, cell.y) in path_coord:
+          return True
+    
+    return False

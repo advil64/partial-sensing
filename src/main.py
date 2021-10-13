@@ -23,6 +23,7 @@ def solver(dim, prob, agent, complete_grid=None):
   if not complete_grid:
     complete_grid = Gridworld(dim, prob, False)
     complete_grid.print()
+    print()
   
   # create agent according to the argument
   agent_object = Agent_2(dim)
@@ -35,13 +36,13 @@ def solver(dim, prob, agent, complete_grid=None):
   # perform repeated A* with the agent
   starting_time = time()
   # start planning a path from the starting block
-  new_path, cells_processed = path_planner((0,0), final_path, agent_object.discovered_grid, dim, manhattan)
+  new_path, cells_processed, path_coord = path_planner((0,0), final_path, agent_object.discovered_grid, dim, manhattan)
   total_cells_processed += cells_processed
   # while A* finds a new path
   while len(new_path) > 0:
     retries += 1
     # execute the path
-    last_node = agent_object.execute_path(new_path, complete_grid)
+    last_node = agent_object.execute_path(new_path, complete_grid, path_coord)
     final_path = last_node
     # get the last unblocked block
     last_block = (0,0)
@@ -53,7 +54,7 @@ def solver(dim, prob, agent, complete_grid=None):
     if last_block == (dim-1, dim-1):
         break
     # create a new path from the last unblocked node
-    new_path, cells_processed = path_planner(last_block, last_unblock_node, agent_object.discovered_grid, dim, manhattan)
+    new_path, cells_processed, path_coord = path_planner(last_block, last_unblock_node, agent_object.discovered_grid, dim, manhattan)
     total_cells_processed += cells_processed
   
   #agent_object.discovered_grid.print()
@@ -75,13 +76,13 @@ def solver(dim, prob, agent, complete_grid=None):
   # perform repeated A* with the agent
   starting_time = time()
   # start planning a path from the starting block
-  new_path, cells_processed = path_planner((0,0), final_path, agent_object.discovered_grid, dim, manhattan)
+  new_path, cells_processed, path_coord = path_planner((0,0), final_path, agent_object.discovered_grid, dim, manhattan)
   total_cells_processed += cells_processed
   # while A* finds a new path
   while len(new_path) > 0:
     retries += 1
     # execute the path
-    last_node = agent_object.execute_path(new_path, complete_grid)
+    last_node = agent_object.execute_path(new_path, complete_grid, path_coord)
     final_path = last_node
     # get the last unblocked block
     last_block = (0,0)
@@ -93,7 +94,7 @@ def solver(dim, prob, agent, complete_grid=None):
     if last_block == (dim-1, dim-1):
         break
     # create a new path from the last unblocked node
-    new_path, cells_processed = path_planner(last_block, last_unblock_node, agent_object.discovered_grid, dim, manhattan)
+    new_path, cells_processed, path_coord = path_planner(last_block, last_unblock_node, agent_object.discovered_grid, dim, manhattan)
     total_cells_processed += cells_processed
   
   #agent_object.discovered_grid.print()
@@ -105,7 +106,7 @@ def solver(dim, prob, agent, complete_grid=None):
 def main():
   p = argparse.ArgumentParser()
   p.add_argument(
-    "-d", "--dimension", type=int, default=101, help="dimension of gridworld"
+    "-d", "--dimension", type=int, default=10, help="dimension of gridworld"
   )
   p.add_argument(
     "-p",

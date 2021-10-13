@@ -6,7 +6,7 @@ class Agent_1:
     self.dim = dim
     self.discovered_grid = Gridworld(dim)
 
-  def execute_path(self, path, complete_grid):
+  def execute_path(self, path, complete_grid, path_coord):
     for index, node in enumerate(path):
       curr = node.curr_block
       # check if path is blocked
