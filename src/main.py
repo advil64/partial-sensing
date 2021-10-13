@@ -53,6 +53,8 @@ def solver(dim, prob, agent, complete_grid=None):
     # create a new path from the last unblocked node
     new_path, cells_processed = path_planner(last_block, last_unblock_node, agent_object.discovered_grid, dim, manhattan)
     total_cells_processed += cells_processed
+  
+  agent_object.discovered_grid.print()
 
   print("Completed in %s seconds" % (time() - starting_time))
   print("Processed %s cells" % total_cells_processed)

@@ -61,7 +61,7 @@ class Agent_3:
       changed = self.update_cell_info(curr_cell)
 
       # if the cell was visited we have the block sense
-      if curr_cell.visited and changed:
+      if curr_cell.visited:
         updated_cells = self.update_knowledgebase(curr_cell)
 
         # update all of the neighbors neighbors by adding those to the set
@@ -132,8 +132,8 @@ class Agent_3:
     if cell.block_sense == cell.confirm_block:
       for n in neighbors:
         if not n.confirmed:
-          self.discovered_grid.update_grid_obstacle((cell.x - 1, cell.y), 0)
-          self.cell_info[cell.x - 1][cell.y].confirmed = True
+          self.discovered_grid.update_grid_obstacle((n.x, n.y), 0)
+          n.confirmed = True
           updated_cells.append(cell)
       return updated_cells
     
@@ -141,8 +141,8 @@ class Agent_3:
     if cell.neighbors - cell.block_sense == cell.confirm_empty:
       for n in neighbors:
         if not n.confirmed:
-          self.discovered_grid.update_grid_obstacle((cell.x - 1, cell.y), 1)
-          self.cell_info[cell.x - 1][cell.y].confirmed = True
+          self.discovered_grid.update_grid_obstacle((n.x, n.y), 1)
+          n.confirmed = True
           updated_cells.append(cell)
     
     return updated_cells
