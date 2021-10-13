@@ -141,7 +141,7 @@ class Agent_3:
         if not n.confirmed:
           self.discovered_grid.update_grid_obstacle((n.x, n.y), 0)
           n.confirmed = True
-          updated_cells.append(cell)
+          updated_cells.append(n)
       return updated_cells
     
     # if we know all empty cells, update the other cells to be blocked
@@ -150,6 +150,6 @@ class Agent_3:
         if not n.confirmed:
           self.discovered_grid.update_grid_obstacle((n.x, n.y), 1)
           n.confirmed = True
-          updated_cells.append(cell)
+          updated_cells.append(n)
     
     return updated_cells

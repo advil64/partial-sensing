@@ -30,6 +30,7 @@ def solver(dim, prob, agent, complete_grid=None):
   # total number of cells processed
   total_cells_processed = 0
   final_path = None
+  retries = 0
 
   # perform repeated A* with the agent
   starting_time = time()
@@ -38,6 +39,7 @@ def solver(dim, prob, agent, complete_grid=None):
   total_cells_processed += cells_processed
   # while A* finds a new path
   while len(new_path) > 0:
+    retries += 1
     # execute the path
     last_node = agent_object.execute_path(new_path, complete_grid)
     final_path = last_node
@@ -58,6 +60,7 @@ def solver(dim, prob, agent, complete_grid=None):
 
   print("Completed in %s seconds" % (time() - starting_time))
   print("Agent 2 Processed %s cells" % total_cells_processed)
+  print("Retried %s times" % retries)
 
 
 
@@ -67,6 +70,7 @@ def solver(dim, prob, agent, complete_grid=None):
   # total number of cells processed
   total_cells_processed = 0
   final_path = None
+  retries = 0
 
   # perform repeated A* with the agent
   starting_time = time()
@@ -75,6 +79,7 @@ def solver(dim, prob, agent, complete_grid=None):
   total_cells_processed += cells_processed
   # while A* finds a new path
   while len(new_path) > 0:
+    retries += 1
     # execute the path
     last_node = agent_object.execute_path(new_path, complete_grid)
     final_path = last_node
@@ -95,6 +100,7 @@ def solver(dim, prob, agent, complete_grid=None):
 
   print("Completed in %s seconds" % (time() - starting_time))
   print("Agent 3 Processed %s cells" % total_cells_processed)
+  print("Retried %s times" % retries)
 
 def main():
   p = argparse.ArgumentParser()
@@ -105,7 +111,7 @@ def main():
     "-p",
     "--probability",
     type=float,
-    default=0.33,
+    default=0.25,
     help="probability of a blocked square",
   )
   p.add_argument(
