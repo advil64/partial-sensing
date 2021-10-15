@@ -5,6 +5,7 @@ from gridworld import Gridworld
 from agent_1 import Agent_1
 from agent_2 import Agent_2
 from agent_3 import Agent_3
+from agent_4 import Agent_4
 from heuristics import manhattan
 from a_star import path_planner
 
@@ -26,7 +27,7 @@ def solver(dim, prob, agent, complete_grid=None):
     print()
   
   # create agents
-  agents = [Agent_1(dim), Agent_2(dim), Agent_3(dim)]
+  agents = [Agent_1(dim), Agent_2(dim), Agent_3(dim), Agent_4(dim)]
   agent_counter = 0
 
   for agent_object in agents:
@@ -71,7 +72,7 @@ def solver(dim, prob, agent, complete_grid=None):
 def main():
   p = argparse.ArgumentParser()
   p.add_argument(
-    "-d", "--dimension", type=int, default=101, help="dimension of gridworld"
+    "-d", "--dimension", type=int, default=10, help="dimension of gridworld"
   )
   p.add_argument(
     "-p",

@@ -4,6 +4,8 @@ class Cell:
     self.x = x
     self.y = y
 
+    self.neighbor_directions = [[-1,-1], [-1,0], [-1,1], [0,-1], [0,1], [1,-1], [1,0], [1,1]]
+
     if x == 0 and y == 0:
       self.neighbors = 3
     elif x == 0 and y == dim-1:
@@ -29,6 +31,8 @@ class Cell:
     self.confirm_empty = 0
     # indicates the number of surrounding cells that we do not have information for
     self.hidden = self.neighbors
+    # indicates the current equation of the cell and its neighbors
+    self.equation = {(self.x + n[0], self.y + n[1], 1) for n in self.neighbor_directions if 0 <= self.x + n[0] < dim and 0 <= self.y + n[1] < dim}
 
   '''
     Defines equality used for set operations
@@ -47,11 +51,10 @@ class Cell:
     @return list: list of neighbors of cell type
   '''
   def get_neighbors(self, cell_info, dim):
-    check_neighbors = [[-1,-1], [-1,0], [-1,1], [0,-1], [0,1], [1,-1], [1,0], [1,1]]
     neighbors = []
 
     # find all the neighbors for the current cell
-    for n in check_neighbors:
+    for n in self.neighbor_directions:
       # the cordinates of the neighbor
       curr_neighbor = (self.x + n[0], self.y + n[1])
       # check bounds
