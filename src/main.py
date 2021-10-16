@@ -79,12 +79,22 @@ def solver(dim, prob, complete_grid=None):
             )
             total_cells_processed += cells_processed
 
-        # Get
+        # Get length of final path
         trajectory_length = get_trajectory(final_path)
+
+        # Update discovered grid to fill unknowns with 1
+        for i in range(dim):
+            for j in range(dim):
+                curr = agent_object.discovered_grid.gridworld[i][j]
+                if curr == 9:
+                    agent_object.discovered_grid.update_grid_obstacle((i,j), 1)
+
+        # Get length of final path when running A* on the final discoverd_grid
+        shortest_trajectory = grid_solver(dim, agent_object.discovered_grid)
 
         completion_time = time() - starting_time
 
-        data["Agent {}".format(agent_counter)] = {"processed": total_cells_processed, "retries": retries, "trajectory": trajectory_length, "time": completion_time, "completed": complete_status}
+        data["Agent {}".format(agent_counter)] = {"processed": total_cells_processed, "retries": retries, "trajectory": trajectory_length, "shortest_trajectory": shortest_trajectory, "time": completion_time, "completed": complete_status}
 
         # print("Agent %s Completed in %s seconds" % (agent_counter, completion_time))
         # print("Agent %s Processed %s cells" % (agent_counter, total_cells_processed))
@@ -93,6 +103,19 @@ def solver(dim, prob, complete_grid=None):
     
     pprint(data)
 
+def grid_solver(dim, discovered_grid):
+    final_path = None
+
+    # start planning a path from the starting block
+    new_path, cells_processed = path_planner((0,0), final_path, discovered_grid, dim, manhattan)
+    
+    trajectory = 0
+
+    if new_path:
+        final_path = new_path[-1]
+        trajectory = get_trajectory(final_path)
+    
+    return trajectory
 
 def get_trajectory(path):
     trajectory_length = 0
