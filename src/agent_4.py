@@ -13,6 +13,7 @@ class Agent_4:
             for j in range(dim):
                 row.append(Cell(i, j, dim))
             self.cell_info.append(row)
+        self.equations = set()
 
     """
     Given a path (from repeated A*) we traverse through the gridworld and gather information
@@ -35,6 +36,8 @@ class Agent_4:
                 self.sense_neighbors(cell, complete_grid)
                 # update our knowledge of blocked nodes
                 self.discovered_grid.update_grid_obstacle(curr, 0)
+                if not cell.visited:
+                    self.equations.add(cell)
                 # return the last node
                 to_ret = node
 
@@ -127,8 +130,8 @@ class Agent_4:
                 # check if we can solve an equation by itself
                 updated_cells.extend(self.make_inference(n.equation, n.right_side))
                 # try to subtract all the combinations of the cells
-                for c in neighbors[i + 1 :]:
-                    if c.visited and c.block_sense != -1:
+                for c in self.equations:
+                    if n != c and c.visited and c.block_sense != -1:
                         updated_cells.extend(self.subtract(n, c))
 
         return updated_cells
