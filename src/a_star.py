@@ -41,7 +41,7 @@ def path_planner(start, latest_block, grid, dim, heuristic):
         else:
             check_neighbors(grid, dim, heuristic, curr, fringe, closed)
 
-    print("No Path Found")
+    #print("No Path Found")
     return ([], cells_processed, set())
         
             
