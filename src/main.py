@@ -27,8 +27,8 @@ def solver(dim, prob, agent, complete_grid=None):
     print()
   
   # create agents
-  agents = [Agent_3(dim), Agent_4(dim)]
-  agent_counter = 2
+  agents = [Agent_2(dim), Agent_3(dim), Agent_4(dim)]
+  agent_counter = 1
 
   for agent_object in agents:
     agent_counter += 1

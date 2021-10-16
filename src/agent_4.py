@@ -52,8 +52,14 @@ class Agent_4:
       # use the new info to draw conclusions about neighbors
       new_confirmed_cells = self.update_neighbors(cell)
 
-      #self.discovered_grid.print()
-      #print()
+      self.discovered_grid.print()
+      print()
+
+      # [0, 0, 0, 0, 1],
+      # [0, 1, 0, 0, 0],
+      # [1, 0, 1, 0, 0],
+      # [0, 1, 0, 0, 1],
+      # [1, 0, 1, 0, 0]]
 
       # if we bumped into an obstacle, then leave the execution
       if bump:
@@ -69,8 +75,8 @@ class Agent_4:
     new_confirmed_cells = set()
     
     # add the neighbors of the current cell and itself to the list
-    neighbors = set(cell.get_neighbors(self.cell_info, self.dim))
-    neighbors.add(cell)
+    neighbors = list(cell.get_neighbors(self.cell_info, self.dim))
+    neighbors.append(cell)
 
     # loop through the cells and keep looping until neighbors is empty
     while neighbors:
@@ -84,8 +90,8 @@ class Agent_4:
 
         # update all of the neighbors neighbors by adding those to the set
         for n in updated_cells:
-          neighbors.update(n.get_neighbors(self.cell_info, self.dim))
-          neighbors.add(n)
+          neighbors.extend(n.get_neighbors(self.cell_info, self.dim))
+          neighbors.append(n)
 
     return new_confirmed_cells
 
@@ -205,7 +211,8 @@ class Agent_4:
     for n in neighbors:
       if self.discovered_grid.gridworld[n.x][n.y] == 1:
         confirm_blocks += 1
-    cell.right_side = cell.block_sense - confirm_blocks
+    if cell.right_side != -1:
+      cell.right_side = cell.block_sense - confirm_blocks
 
 
   def check_block_in_path(self, path_coord, new_confirmed_cells):
