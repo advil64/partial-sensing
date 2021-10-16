@@ -101,7 +101,7 @@ def solver(dim, prob, complete_grid=None):
         # print("Agent %s Retried %s times" % (agent_counter, retries))
         # print("Agent %s Has Trajectory Length %s" % (agent_counter, trajectory_length))
     
-    pprint(data)
+    print(json.dumps(data))
 
 def grid_solver(dim, discovered_grid):
     final_path = None
