@@ -8,13 +8,13 @@ For Agent 3, we use the same planning step as in Agent 1 and 2, but we modify th
 **Information Representation**
 
 To represent our information, we create a Cell object for each cell in the grid which holds information about the cell. The following information is stored:
-- neighbors: The number of neighbors the cell has.
-- visited: Boolean value that represents if we visited the cell while executing a path.
-- confirmed: Boolean value that represents if we were able to confirm whether the cell is empty or a block, either by visiting or through inference.
-- block_sense: Number of neighbors we sensed to be blocks.
-- confirm_block: Number of neighbors we confirmed to be blocks.
-- confirm_empty: Number of neighbors we confirmed to be empty.
-- hidden: Number of neighbors that we haven't confirmed yet.
+- *neighbors*: The number of neighbors the cell has.
+- *visited*: Boolean value that represents if we visited the cell while executing a path.
+- *confirmed*: Boolean value that represents if we were able to confirm whether the cell is empty or a block, either by visiting or through inference.
+- *block_sense*: Number of neighbors we sensed to be blocks.
+- *confirm_block*: Number of neighbors we confirmed to be blocks.
+- *confirm_empty*: Number of neighbors we confirmed to be empty.
+- *hidden*: Number of neighbors that we haven't confirmed yet.
 
 Agent 3 stores a grid of these cells (cell_info) to keep track of their information.
 Agent 3 will also update its discovered_grid whenever a cell is confirmed.
@@ -48,3 +48,16 @@ After we're done making inferences on that cell, we return the list of cells we 
 Back in `update_neighbors`, we add the updated cells and their neighbors to our set for further inferences.
 
 We continue doing this in `update_neighbors` until no more cells are updated. Afterwards, we return to execute_path. We then check if any of the newly updated blocks are in our path. If there are, then we stop executing the path.
+
+## How is Agent 4 implemented?
+Agent 4 is very similar to Agent 3 in that we must either make inferences to find the blockers or bump into them.
+
+**Information Representation**
+
+To represent our information, we create a Cell object for each cell in the grid which holds information about the cell. The following information is used by agent four:
+
+- *visited*: Indicates whether our agent has physically traversed that cell or not
+- *confirmed*: Indicates whether we have been able to make an inference about that cell
+- *block_sense*: Number of blocked neighbors. This value is calculated when the given node is visited.
+- *equation*: The tuples of coordinates which will be used to create the left hand side of the system of equations
+- *right_side*: The number of hidden cells that are blocked. This value is decremented when a hidden neighbor is found to be a block. It is also the right hand side of the system of equations.
