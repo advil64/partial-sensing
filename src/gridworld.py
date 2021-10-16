@@ -25,11 +25,21 @@ class Gridworld:
       #   # append the row to the gridworld
       #   self.gridworld.append(row)
       #self.gridworld = [[0, 1], [0, 0]]
-      self.gridworld = [[0, 0, 0, 0, 0],
-                        [0, 0, 0, 0, 0],
-                        [0, 1, 0, 0, 0],
-                        [0, 1, 0, 0, 0],
-                        [1, 0, 0, 0, 0]]
+      # self.gridworld = [[0, 0, 0, 0, 0],
+      #                   [0, 0, 0, 0, 0],
+      #                   [0, 1, 0, 0, 0],
+      #                   [0, 1, 0, 0, 0],
+      #                   [1, 0, 0, 0, 0]]
+      # self.gridworld = [[0, 0, 0, 0, 1],
+      #                   [0, 0, 1, 0, 1],
+      #                   [0, 0, 1, 0, 1],
+      #                   [0, 0, 1, 0, 0],
+      #                   [0, 1, 1, 0, 0]]
+      self.gridworld = [[0, 0, 0, 1, 0],
+                        [0, 0, 0, 0, 1],
+                        [0, 1, 1, 0, 0],
+                        [0, 1, 1, 1, 0],
+                        [1, 0, 0, 1, 0]]
 
   def print(self):
     for row in self.gridworld:

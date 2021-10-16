@@ -52,8 +52,8 @@ class Agent_4:
       # use the new info to draw conclusions about neighbors
       new_confirmed_cells = self.update_neighbors(cell)
 
-      # self.discovered_grid.print()
-      # print()
+      #self.discovered_grid.print()
+      #print()
 
       # if we bumped into an obstacle, then leave the execution
       if bump:
@@ -70,11 +70,12 @@ class Agent_4:
     
     # add the neighbors of the current cell and itself to the list
     neighbors = set(cell.get_neighbors(self.cell_info, self.dim))
-    #neighbors.add(cell)
+    neighbors.add(cell)
 
     # loop through the cells and keep looping until neighbors is empty
     while neighbors:
       curr_cell = neighbors.pop()
+      self.update_equation(curr_cell)
 
       # if the cell was visited and we have the block sense, infer and add to knowledge base
       if curr_cell.visited and curr_cell.block_sense != -1:
@@ -84,7 +85,7 @@ class Agent_4:
         # update all of the neighbors neighbors by adding those to the set
         for n in updated_cells:
           neighbors.update(n.get_neighbors(self.cell_info, self.dim))
-          #neighbors.add(n)
+          neighbors.add(n)
 
     return new_confirmed_cells
 
@@ -102,6 +103,8 @@ class Agent_4:
 
     # return the number of obstacles surrounding the current node
     cell.block_sense = num_sensed
+    if cell.right_side == -1:
+      cell.right_side = num_sensed
 
     '''
       Implement systems of equations to enhance inferences, do these equations change?
@@ -115,22 +118,24 @@ class Agent_4:
     # get the neighbors and check to see which are blockers
     neighbors = cell.get_neighbors(self.cell_info, self.dim)
 
-    # traverse neighbors and make inferences
-    for n in neighbors:
+    # # traverse neighbors and make inferences
+    # for n in neighbors:
 
-      # see if any inferences are possible
-      if (cell.x, cell.y, 1) in n.equation:
-        n.equation.remove((cell.x, cell.y, 1))
-        # if the newly updated cell is a block then update block sense 
-        if self.discovered_grid.gridworld[cell.x][cell.y]:
-          n.block_sense -= 1
-
+    #   # see if any inferences are possible
+    #   if (cell.x, cell.y, 1) in n.equation:
+    #     n.equation.remove((cell.x, cell.y, 1))
+    #     # if the newly updated cell is a block then update block sense 
+    #     if self.discovered_grid.gridworld[cell.x][cell.y]:
+    #       n.right_side -= 1
+    
+    updated_cells.extend(self.make_inference(cell.equation, cell.right_side))
+    
     # solve a system of equations
     for i,n in enumerate(neighbors):
       # ignore the neighbor if we have not visited
       if n.visited:
         # check if we can solve an equation by itself
-        updated_cells.extend(self.make_inference(n.equation, n.block_sense))
+        updated_cells.extend(self.make_inference(n.equation, n.right_side))
         # try to subtract all the combinations of the cells
         for c in neighbors[i+1:]:
           if c.visited:
@@ -145,10 +150,10 @@ class Agent_4:
   def subtract(self, cell1, cell2):
 
     result = cell1.equation.symmetric_difference(cell2.equation)
-    right_hand_side = abs(cell1.block_sense - cell2.block_sense)
+    right_hand_side = abs(cell1.right_side - cell2.right_side)
     
     # set negative values for subtracted equations
-    if cell1.block_sense >= cell2.block_sense:
+    if cell1.right_side >= cell2.right_side:
       for r in result:
         if r in cell2.equation:
           result.remove(r)
@@ -192,6 +197,16 @@ class Agent_4:
           self.cell_info[cord[0]][cord[1]].confirmed = True
 
     return updated_cells
+
+  def update_equation(self, cell):
+    cell.equation = {(cell.x + n[0], cell.y + n[1], 1) for n in cell.neighbor_directions if 0 <= cell.x + n[0] < self.dim and 0 <= cell.y + n[1] < self.dim and not self.cell_info[cell.x + n[0]][cell.y + n[1]].confirmed}
+    confirm_blocks = 0
+    neighbors = cell.get_neighbors(self.cell_info, self.dim)
+    for n in neighbors:
+      if self.discovered_grid.gridworld[n.x][n.y] == 1:
+        confirm_blocks += 1
+    cell.right_side = cell.block_sense - confirm_blocks
+
 
   def check_block_in_path(self, path_coord, new_confirmed_cells):
     for cell in new_confirmed_cells:

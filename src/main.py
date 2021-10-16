@@ -63,6 +63,7 @@ def solver(dim, prob, agent, complete_grid=None):
       new_path, cells_processed, path_coord = path_planner(last_block, last_unblock_node, agent_object.discovered_grid, dim, manhattan)
       total_cells_processed += cells_processed
     
+    #print()
     #agent_object.discovered_grid.print()
 
     print("Completed in %s seconds" % (time() - starting_time))
@@ -78,7 +79,7 @@ def main():
     "-p",
     "--probability",
     type=float,
-    default=0.20,
+    default=0.33,
     help="probability of a blocked square",
   )
   p.add_argument(

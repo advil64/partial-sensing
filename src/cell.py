@@ -33,6 +33,8 @@ class Cell:
     self.hidden = self.neighbors
     # indicates the current equation of the cell and its neighbors
     self.equation = {(self.x + n[0], self.y + n[1], 1) for n in self.neighbor_directions if 0 <= self.x + n[0] < dim and 0 <= self.y + n[1] < dim}
+    # indicates right side of self.equation
+    self.right_side = self.block_sense
 
   '''
     Defines equality used for set operations
