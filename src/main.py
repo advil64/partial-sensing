@@ -107,7 +107,7 @@ def grid_solver(dim, discovered_grid):
     final_path = None
 
     # start planning a path from the starting block
-    new_path, cells_processed = path_planner((0,0), final_path, discovered_grid, dim, manhattan)
+    new_path, cells_processed, path_coord = path_planner((0,0), final_path, discovered_grid, dim, manhattan)
     
     trajectory = 0
 
