@@ -73,7 +73,7 @@ def solver(dim, prob, agent, complete_grid=None):
 def main():
   p = argparse.ArgumentParser()
   p.add_argument(
-    "-d", "--dimension", type=int, default=5, help="dimension of gridworld"
+    "-d", "--dimension", type=int, default=101, help="dimension of gridworld"
   )
   p.add_argument(
     "-p",

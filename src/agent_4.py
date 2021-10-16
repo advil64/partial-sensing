@@ -52,8 +52,8 @@ class Agent_4:
       # use the new info to draw conclusions about neighbors
       new_confirmed_cells = self.update_neighbors(cell)
 
-      self.discovered_grid.print()
-      print()
+      # self.discovered_grid.print()
+      # print()
 
       # [0, 0, 0, 0, 1],
       # [0, 1, 0, 0, 0],
@@ -139,12 +139,12 @@ class Agent_4:
     # solve a system of equations
     for i,n in enumerate(neighbors):
       # ignore the neighbor if we have not visited
-      if n.visited:
+      if n.visited and n.block_sense != -1:
         # check if we can solve an equation by itself
         updated_cells.extend(self.make_inference(n.equation, n.right_side))
         # try to subtract all the combinations of the cells
         for c in neighbors[i+1:]:
-          if c.visited:
+          if c.visited and c.block_sense != -1:
             updated_cells.extend(self.subtract(n, c))
 
     return updated_cells
@@ -180,16 +180,16 @@ class Agent_4:
   def make_inference(self, equation, blocks):
     updated_cells = []
 
+    # calculates the number of positive tuples
+    positive = len(list(filter(lambda x: (x[2] > 0), equation)))
+
     # if we know all empty cells, update the other cells to be blocked
-    if blocks == 0:
+    if blocks == 0 and positive == len(equation):
       for cord in equation:
         if not self.cell_info[cord[0]][cord[1]].confirmed:
           self.discovered_grid.update_grid_obstacle((cord[0], cord[1]), 0)
           self.cell_info[cord[0]][cord[1]].confirmed = True
           updated_cells.append(self.cell_info[cord[0]][cord[1]])
-    
-    # calculates the number of positive tuples
-    positive = len(list(filter(lambda x: (x[2] > 0), equation)))
 
     # if the positive cordinates is the same as blocks then positives are all ones
     if positive == blocks:
@@ -211,7 +211,7 @@ class Agent_4:
     for n in neighbors:
       if self.discovered_grid.gridworld[n.x][n.y] == 1:
         confirm_blocks += 1
-    if cell.right_side != -1:
+    if cell.block_sense != -1:
       cell.right_side = cell.block_sense - confirm_blocks
 
 
