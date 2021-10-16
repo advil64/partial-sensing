@@ -27,8 +27,8 @@ def solver(dim, prob, agent, complete_grid=None):
     print()
   
   # create agents
-  agents = [Agent_1(dim), Agent_2(dim), Agent_3(dim), Agent_4(dim)]
-  agent_counter = 0
+  agents = [Agent_3(dim), Agent_4(dim)]
+  agent_counter = 2
 
   for agent_object in agents:
     agent_counter += 1
@@ -72,13 +72,13 @@ def solver(dim, prob, agent, complete_grid=None):
 def main():
   p = argparse.ArgumentParser()
   p.add_argument(
-    "-d", "--dimension", type=int, default=10, help="dimension of gridworld"
+    "-d", "--dimension", type=int, default=5, help="dimension of gridworld"
   )
   p.add_argument(
     "-p",
     "--probability",
     type=float,
-    default=0.33,
+    default=0.20,
     help="probability of a blocked square",
   )
   p.add_argument(

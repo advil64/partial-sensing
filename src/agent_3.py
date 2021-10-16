@@ -52,8 +52,8 @@ class Agent_3:
       # use the new info to draw conclusions about neighbors
       new_confirmed_cells = self.update_neighbors(cell)
 
-      #self.discovered_grid.print()
-      #print()
+      # self.discovered_grid.print()
+      # print()
 
       # if we bumped into an obstacle, then leave the execution
       if bump:

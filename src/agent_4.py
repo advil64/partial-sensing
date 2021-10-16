@@ -52,8 +52,8 @@ class Agent_4:
       # use the new info to draw conclusions about neighbors
       new_confirmed_cells = self.update_neighbors(cell)
 
-      #self.discovered_grid.print()
-      #print()
+      # self.discovered_grid.print()
+      # print()
 
       # if we bumped into an obstacle, then leave the execution
       if bump:
@@ -70,7 +70,7 @@ class Agent_4:
     
     # add the neighbors of the current cell and itself to the list
     neighbors = set(cell.get_neighbors(self.cell_info, self.dim))
-    neighbors.add(cell)
+    #neighbors.add(cell)
 
     # loop through the cells and keep looping until neighbors is empty
     while neighbors:
@@ -84,7 +84,7 @@ class Agent_4:
         # update all of the neighbors neighbors by adding those to the set
         for n in updated_cells:
           neighbors.update(n.get_neighbors(self.cell_info, self.dim))
-          neighbors.add(n)
+          #neighbors.add(n)
 
     return new_confirmed_cells
 
@@ -132,7 +132,7 @@ class Agent_4:
         # check if we can solve an equation by itself
         updated_cells.extend(self.make_inference(n.equation, n.block_sense))
         # try to subtract all the combinations of the cells
-        for c in neighbors[i:]:
+        for c in neighbors[i+1:]:
           if c.visited:
             updated_cells.extend(self.subtract(n, c))
 
@@ -172,8 +172,10 @@ class Agent_4:
     # if we know all empty cells, update the other cells to be blocked
     if blocks == 0:
       for cord in equation:
-        self.discovered_grid.update_grid_obstacle((cord[0], cord[1]), 0)
-        updated_cells.append(self.cell_info[cord[0]][cord[1]])
+        if not self.cell_info[cord[0]][cord[1]].confirmed:
+          self.discovered_grid.update_grid_obstacle((cord[0], cord[1]), 0)
+          self.cell_info[cord[0]][cord[1]].confirmed = True
+          updated_cells.append(self.cell_info[cord[0]][cord[1]])
     
     # calculates the number of positive tuples
     positive = len(list(filter(lambda x: (x[2] > 0), equation)))
@@ -181,11 +183,13 @@ class Agent_4:
     # if the positive cordinates is the same as blocks then positives are all ones
     if positive == blocks:
       for cord in equation:
-        updated_cells.append(self.cell_info[cord[0]][cord[1]])
-        if cord[2] > 0:
-          self.discovered_grid.update_grid_obstacle((cord[0], cord[1]), 1)
-        else:
-          self.discovered_grid.update_grid_obstacle((cord[0], cord[1]), 0)
+        if not self.cell_info[cord[0]][cord[1]].confirmed:
+          updated_cells.append(self.cell_info[cord[0]][cord[1]])
+          if cord[2] > 0:
+            self.discovered_grid.update_grid_obstacle((cord[0], cord[1]), 1)
+          else:
+            self.discovered_grid.update_grid_obstacle((cord[0], cord[1]), 0)
+          self.cell_info[cord[0]][cord[1]].confirmed = True
 
     return updated_cells
 
