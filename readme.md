@@ -61,3 +61,35 @@ To represent our information, we create a Cell object for each cell in the grid 
 - *block_sense*: Number of blocked neighbors. This value is calculated when the given node is visited.
 - *equation*: The tuples of coordinates which will be used to create the left hand side of the system of equations
 - *right_side*: The number of hidden cells that are blocked. This value is decremented when a hidden neighbor is found to be a block. It is also the right hand side of the system of equations.
+
+Agent 4 stores a grid of these cells (cell_info) to keep track of their information.
+Agent 4 will also update its discovered_grid whenever a cell is confirmed.
+
+**Agent 4 Workflow**
+
+Just like Agent 3, in Agent 4 we start off in its `execute_path` function where we are passed the path from an iteration of repeated A* as well as the complete gridworld used for block sensing.
+
+For each cell in the path, we check if the cell is empty or blocked.
+
+If the cell is empty:
+- Calculate the number of blocks around the cell by calling `sense_neighbors`. We do this by looking at the complete_grid and counting the number of blocks that neighbor the cell. We then store the number of blocks in the corresponding cell object's block_sense value.
+- Update our cell's value in the discovered gridworld
+- If the cell was not visited already we add it to the set of visited cells to try to make inferences against every time a cell has been updated.
+
+If the cell is blocked:
+
+- We update the cell's value on the discovered_grid.
+- We set our to_ret value (value to be returned) to the cell before.
+- We set our bump value to *true* which means that there exists an obstacle in the path
+
+For both cases:
+
+- We set the cell's visited value to True.
+- We set the cell's confirmed value to True.
+- We call `update_neighbors` on that cell to see if we can make any new inferences with this information.
+
+When calling `update_neighbors` we first create a set of the newly confirmed cells. This set will update with any cells we have made an inference on.
+
+We also create a neighbors list which updates with all of the neighbors of the cells we make inferences on. This is because these are the cells that get updated when another is confirmed so to optimize our code we only update these equations rather than all the equations in the grid.
+
+We traverse through the neighbors list popping one by one until there have been no new inferences, in which case the neighbors list will be empty. Each time we pop from the list we update the cell's equations by looking at the unhidden 
