@@ -37,6 +37,8 @@ def solver(dim, prob, complete_grid=None):
 
     for agent_object in agents:
         agent_counter += 1
+        # total number of cells explored
+        trajectory_length = 0
         # total number of cells processed
         total_cells_processed = 0
         # final path which points to last node
@@ -57,7 +59,8 @@ def solver(dim, prob, complete_grid=None):
         while len(new_path) > 0:
             retries += 1
             # execute the path
-            last_node = agent_object.execute_path(new_path, complete_grid, path_coord)
+            last_node, explored = agent_object.execute_path(new_path, complete_grid, path_coord)
+            trajectory_length += explored
             final_path = last_node
             # get the last unblocked block
             last_block = (0, 0)
@@ -78,9 +81,6 @@ def solver(dim, prob, complete_grid=None):
                 manhattan,
             )
             total_cells_processed += cells_processed
-
-        # Get length of final path
-        trajectory_length = get_trajectory(final_path)
 
         # Update discovered grid to fill unknowns with 1
         for i in range(dim):

@@ -22,6 +22,7 @@ class Agent_3:
     """
 
     def execute_path(self, path, complete_grid, path_coord):
+        explored = 0
         for node in path:
             curr = node.curr_block
             path_coord.remove(curr)
@@ -54,12 +55,13 @@ class Agent_3:
 
             # if we bumped into an obstacle, then leave the execution
             if bump:
-                return to_ret
+                return to_ret, explored
+            explored += 1
             # check if any new confirmed cells introduce block in your path
             if self.check_block_in_path(path_coord, new_confirmed_cells):
-                return to_ret
+                return to_ret, explored
 
-        return path[-1]
+        return path[-1], explored
 
     def update_neighbors(self, cell):
         # set that contains any cell that's been confirmed
