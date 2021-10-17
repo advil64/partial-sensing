@@ -190,7 +190,20 @@ When calling `update_neighbors` we first create a set of the newly confirmed cel
 
 We also create a neighbors list which updates with all of the neighbors of the cells we make inferences on. This is because these are the cells that get updated when another is confirmed so to optimize our code we only update these equations rather than all the equations in the grid.
 
-We traverse through the neighbors list popping one by one until there have been no new inferences, in which case the neighbors list will be empty. Each time we pop from the list we update the cell's equations by looking at the unhidden 
+We traverse through the neighbors list popping one at a time until there have been no new inferences, in which case the neighbors list will be empty. Each time we pop from the list we update the cell's equations in `update_equation` by looking at the unconfirmed neighbors and replacing the old equation with the new equation. We also recalculate the right hand side of the equation by first recalculating the confirmed blocks in the cell's neighbors and subtracting that from block sense.
+
+To make inferences we first confirm that the given cell has been visited, or else the right hand side of the equation will be -1. Next we call `update_knowledgebase` where the following steps take place:
+- We first get all of the current cell's neighbors
+- Next we try to make an inference using only the cell's current equation. Basically if the terms in the equation's left hand side equals the right hand side we can assume that all the terms in the equation are blocked
+- Then we have a double for loop to try to make inferences by subtracting every possible combination of equations. We do subtract by finding the coordinates which are not shared amongst the equation sets for the left side and taking the difference of the unconfirmed blocked nodes on the right.
+```python
+result = cell1.equation.symmetric_difference(cell2.equation)
+right_hand_side = abs(cell1.right_side - cell2.right_side)
+```
+- When subtracting we set the third element of the coordinate tuple to be negative one if it comes from the equation being subtracted.
+- Now we make a few inferences, if the right hand side is zero but there are still coordinates in the equation after we subtracted, then we know that all of those cells are zero, we set them as such
+- We can also infer that if the positive coordinates are the same as the number of blocks that all the cells at the positive coordinates must be blocks and the negative ones must be open.
+- Once we make those inferences and update the discovered gridworld, we can go back and append those cells and its neighbors to have their equations updated.
 
 ## Computational Optimizations
 In Agent 3 and 4, we take multiple steps to minimize computations in order to ensure our Agents run as efficiently as they can.
