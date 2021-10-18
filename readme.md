@@ -190,7 +190,7 @@ When calling `update_neighbors` we first create a set of the newly confirmed cel
 
 We also create a neighbors list which updates with all of the neighbors of the cells we make inferences on. This is because these are the cells that get updated when another is confirmed, so to optimize our code we only update these equations rather than all the equations in the grid.
 
-We traverse through the neighbors list popping one at a time until there have been no new inferences, in which case the neighbors list will be empty. Each time we pop from the list we update the cell's equations in `update_equation` by looking at the unconfirmed neighbors and replacing the old equation with the new equation. We also recalculate the right hand side of the equation by first recalculating the confirmed blocks in the cell's neighbors and subtracting that from block sense.
+We traverse through the neighbors list popping one at a time until there have been no new inferences, in which case the neighbors list will be empty. Each time we pop from the list we update the cell's equations in `update_equation` by looking at the unconfirmed neighbors and replacing the old equation with the new equation. We also recalculate the right hand side of the equation by first recalculating the confirmed blocks in the cell's neighbors from the discovered_grid and subtracting that from block sense.
 
 To make inferences we first confirm that the given cell has been visited, or else the right hand side of the equation will be -1. Next we call `update_knowledgebase` where the following steps take place:
 - We first get all of the current cell's neighbors
@@ -207,7 +207,7 @@ right_hand_side = abs(cell1.right_side - cell2.right_side)
         - ```python
             if blocks == 0 and positive == len(equation):
            ```
-    - If the right_side ("blocks") of the equation is greater than 0 and it is equal to the number of positive tuples in the equation set, then all grid values of the coordinates in the positive tuples in the equation set must be blocks and all negative tuples must be 0.
+    - If the right_side ("blocks") of the equation is greater than 0 and it is equal to the number of positive tuples in the equation set, then all grid values of the coordinates in the positive tuples in the equation set must be blocks and 1, and all negative tuples must be empty and 0.
         - ```python
             if positive == blocks:
            ```
@@ -215,6 +215,7 @@ right_hand_side = abs(cell1.right_side - cell2.right_side)
 - Once we make those inferences and update the discovered gridworld, we can go back and append those cells and its neighbors to have their equations updated and to see if we can make new inferences with the updated equations.
 
 **Example of Equation Subtraction and Inference**
+
 Cell_1.equation = {(0,1,1), (1,2,1), (2,0,1), (2,2,1))}
 
 Cell_1.right_side = 3
