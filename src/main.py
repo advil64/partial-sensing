@@ -25,8 +25,8 @@ def solver(dim, prob, complete_grid=None):
     # create a gridworld
     if not complete_grid:
         complete_grid = Gridworld(dim, prob, False)
-        # complete_grid.print()
-        # print()
+        complete_grid.print()
+        print()
 
     # json output
     data = {"Agent 1": {}, "Agent 2": {}, "Agent 3": {}, "Agent 4": {}}
@@ -128,7 +128,7 @@ def get_trajectory(path):
 def main():
     p = argparse.ArgumentParser()
     p.add_argument(
-        "-d", "--dimension", type=int, default=101, help="dimension of gridworld"
+        "-d", "--dimension", type=int, default=5, help="dimension of gridworld"
     )
     p.add_argument(
         "-p",
