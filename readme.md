@@ -263,3 +263,643 @@ The first step we take to minimize computations is how we traverse our grid and 
 Whenever we infer the identity of a cell, we make sure to add this cell and its neighbors to our set. Whenever we pop the cell from the set, we update it’s info on neighbors to ensure it’s up to date and we make inferences if we can. We repeat this until the set is empty, which means there are no more inferences to be made. Thus, we significantly improve our computational overhead by ignoring cells that aren’t affected by the changes.
 
 The next step we take to minimize computations is to ignore non-sensed cells when making inferences on them. We can ignore these cells because they haven’t sensed how many of their neighbors are blocks. Without access to this information, we can’t make any inferences on them. As a result we choose to ignore these cells when making inferences in order to avoid wasting any computations on these cells.
+
+## Appendix
+**The 4-Neighbor Agent**
+```python
+from gridworld import Gridworld
+
+class Agent_1:
+
+  def __init__(self, dim):
+    self.dim = dim
+    self.discovered_grid = Gridworld(dim)
+
+  def execute_path(self, path, complete_grid, path_coord):
+    explored = 0
+    for index, node in enumerate(path):
+      curr = node.curr_block
+      # check if path is blocked
+      if complete_grid.gridworld[curr[0]][curr[1]] == 1:
+        # update our knowledge of blocked nodes
+        self.discovered_grid.update_grid_obstacle(curr, 1)
+        return node.parent_block, explored
+      self.discovered_grid.update_grid_obstacle(curr, 0)
+      # update knowledge of neighbor blocks
+      self.update_neighbor_obstacles(curr, complete_grid)
+      explored += 1
+    return path[-1], explored
+
+  # method for 4-neighbor agent
+  def update_neighbor_obstacles(self, curr, complete_grid):
+    # check the neighbor above the block
+    if curr[0] - 1 >= 0:
+      if complete_grid.gridworld[curr[0] - 1][curr[1]] == 1:
+        self.discovered_grid.update_grid_obstacle((curr[0] - 1, curr[1]), 1)
+      else:
+        self.discovered_grid.update_grid_obstacle((curr[0] - 1, curr[1]), 0)
+    # check the neighbor below the block
+    if curr[0] + 1 < self.dim:
+      if complete_grid.gridworld[curr[0] + 1][curr[1]] == 1:
+        self.discovered_grid.update_grid_obstacle((curr[0] + 1, curr[1]), 1)
+      else:
+        self.discovered_grid.update_grid_obstacle((curr[0] + 1, curr[1]), 0)
+    # check the neighbor left of the block
+    if curr[1] - 1 >= 0:
+      if complete_grid.gridworld[curr[0]][curr[1] - 1] == 1:
+        self.discovered_grid.update_grid_obstacle((curr[0], curr[1] - 1), 1)
+      else:
+        self.discovered_grid.update_grid_obstacle((curr[0], curr[1] - 1), 0)
+    # check the neighbor right of the block
+    if curr[1] + 1 < self.dim:
+      if complete_grid.gridworld[curr[0]][curr[1] + 1] == 1:
+        self.discovered_grid.update_grid_obstacle((curr[0], curr[1] + 1), 1)
+      else:
+        self.discovered_grid.update_grid_obstacle((curr[0], curr[1] + 1), 0)
+```
+**The Blindfolded Agent**
+```python
+from gridworld import Gridworld
+
+class Agent_2:
+
+  def __init__(self, dim):
+    self.dim = dim
+    self.discovered_grid = Gridworld(dim)
+
+  def execute_path(self, path, complete_grid, path_coord):
+    explored = 0
+    for index, node in enumerate(path):
+      curr = node.curr_block
+      # check if path is blocked
+      if complete_grid.gridworld[curr[0]][curr[1]] == 1:
+        # update our knowledge of blocked nodes
+        self.discovered_grid.update_grid_obstacle(curr, 1)
+        return node.parent_block, explored
+      self.discovered_grid.update_grid_obstacle(curr, 0)
+      explored += 1
+    return path[-1], explored
+```
+**The Example Inference Agent**
+```python
+from gridworld import Gridworld
+from cell import Cell
+
+
+class Agent_3:
+    def __init__(self, dim):
+        self.dim = dim
+        self.discovered_grid = Gridworld(dim)
+        # grid that Agent uses to keep track of each cell info
+        self.cell_info = []
+        for i in range(dim):
+            row = []
+            for j in range(dim):
+                row.append(Cell(i, j, dim))
+            self.cell_info.append(row)
+
+    """
+    Given a path (from repeated A*) we traverse through the gridworld and gather information
+    @param path: given path as a list of nodes
+    @param complete_grid: the full gridworld to check for obstacles along the way
+    @return list: the last node of the gridworld or the parent node
+    """
+
+    def execute_path(self, path, complete_grid, path_coord):
+        explored = 0
+        for node in path:
+            curr = node.curr_block
+            path_coord.remove(curr)
+            cell = self.cell_info[curr[0]][curr[1]]
+            to_ret = None
+            bump = False
+
+            # check if path is open
+            if complete_grid.gridworld[cell.x][cell.y] == 0:
+                # sense Agent's surroundings to determine number of blocks around
+                self.sense_neighbors(cell, complete_grid)
+                # update our knowledge of blocked nodes
+                self.discovered_grid.update_grid_obstacle(curr, 0)
+                # return the last node
+                to_ret = node
+
+            else:
+                self.discovered_grid.update_grid_obstacle(curr, 1)
+                # return the parent and tell the gridworld to find a new path
+                to_ret = node.parent_block
+                # set bump to true to indicate we bumped into an obstacle
+                bump = True
+
+            # mark the cell as visited
+            cell.visited = True
+            # mark cell as a confirmed value because it was visited
+            cell.confirmed = True
+            # use the new info to draw conclusions about neighbors
+            new_confirmed_cells = self.update_neighbors(cell)
+
+            # if we bumped into an obstacle, then leave the execution
+            if bump:
+                return to_ret, explored
+            explored += 1
+            # check if any new confirmed cells introduce block in your path
+            if self.check_block_in_path(path_coord, new_confirmed_cells):
+                return to_ret, explored
+
+        return path[-1], explored
+
+    def update_neighbors(self, cell):
+        # set that contains any cell that's been confirmed
+        new_confirmed_cells = set()
+
+        # add the neighbors of the current cell and itself to the list
+        neighbors = set(cell.get_neighbors(self.cell_info, self.dim))
+        neighbors.add(cell)
+
+        # loop through the cells and keep looping until neighbors is empty
+        while neighbors:
+            curr_cell = neighbors.pop()
+            changed = self.update_cell_info(curr_cell)
+
+            # if the cell was visited and we have the block sense, infer and add to knowledge base
+            if curr_cell.visited and curr_cell.block_sense != -1:
+                updated_cells = self.update_knowledgebase(curr_cell)
+                new_confirmed_cells.update(updated_cells)
+
+                # update all of the neighbors neighbors by adding those to the set
+                for n in updated_cells:
+                    neighbors.update(n.get_neighbors(self.cell_info, self.dim))
+                    neighbors.add(n)
+
+        return new_confirmed_cells
+
+    """
+    This method returns the number of blocked neighbors a given cell has
+    @param cell: the current cell in the path traversal
+    @param complete_grid: grid with the obstacles
+    """
+
+    def sense_neighbors(self, cell, complete_grid):
+        num_sensed = 0
+        neighbors = cell.get_neighbors(self.cell_info, self.dim)
+
+        # loop through the neighbors to be checked and take the sum (1 is block)
+        num_sensed = sum(complete_grid.gridworld[n.x][n.y] for n in neighbors)
+
+        # return the number of obstacles surrounding the current node
+        cell.block_sense = num_sensed
+
+    """
+    This method stores the surrounding information of any given cell based on the discovered grid
+    @param cell: cell to calculate surroundings
+    @return boolean: indicating if any values have changed
+    """
+
+    def update_cell_info(self, cell):
+        num_hidden = 0
+        num_block = 0
+        num_empty = 0
+        neighbors = cell.get_neighbors(self.cell_info, self.dim)
+
+        # loop through the neighbors to be checked
+        for n in neighbors:
+            if n.confirmed:
+                # check and increment if it is blocked
+                if self.discovered_grid.gridworld[n.x][n.y] == 1:
+                    num_block += 1
+                # otherwise increment the empty counter
+                else:
+                    num_empty += 1
+            # the neighbor cell has not been explored yet
+            else:
+                num_hidden += 1
+
+        has_changed = (
+            (cell.hidden - num_hidden)
+            or (cell.confirm_block - num_block)
+            or (cell.confirm_empty - num_empty)
+        )
+
+        if has_changed:
+            cell.hidden = num_hidden
+            cell.confirm_block = num_block
+            cell.confirm_empty = num_empty
+
+        return has_changed
+
+    def update_knowledgebase(self, cell):
+
+        updated_cells = []
+
+        # if there are hidden not cells, leave
+        if cell.hidden == 0:
+            return updated_cells
+
+        # get the neighbors and check to see which are blockers
+        neighbors = cell.get_neighbors(self.cell_info, self.dim)
+
+        # if we know all block cells, update the other cells to be empty
+        if cell.block_sense == cell.confirm_block:
+            for n in neighbors:
+                if not n.confirmed:
+                    self.discovered_grid.update_grid_obstacle((n.x, n.y), 0)
+                    n.confirmed = True
+                    updated_cells.append(n)
+            return updated_cells
+
+        # if we know all empty cells, update the other cells to be blocked
+        if cell.neighbors - cell.block_sense == cell.confirm_empty:
+            for n in neighbors:
+                if not n.confirmed:
+                    self.discovered_grid.update_grid_obstacle((n.x, n.y), 1)
+                    n.confirmed = True
+                    updated_cells.append(n)
+
+        return updated_cells
+
+    def check_block_in_path(self, path_coord, new_confirmed_cells):
+        for cell in new_confirmed_cells:
+            if self.discovered_grid.gridworld[cell.x][cell.y] == 1:
+                if (cell.x, cell.y) in path_coord:
+                    return True
+
+        return False
+```
+**Our Example Agent**
+```python
+from gridworld import Gridworld
+from cell import Cell
+
+
+class Agent_4:
+    def __init__(self, dim):
+        self.dim = dim
+        self.discovered_grid = Gridworld(dim)
+        # grid that Agent uses to keep track of each cell info
+        self.cell_info = []
+        for i in range(dim):
+            row = []
+            for j in range(dim):
+                row.append(Cell(i, j, dim))
+            self.cell_info.append(row)
+        self.equations = set()
+
+    """
+    Given a path (from repeated A*) we traverse through the gridworld and gather information
+    @param path: given path as a list of nodes
+    @param complete_grid: the full gridworld to check for obstacles along the way
+    @return list: the last node of the gridworld or the parent node
+    """
+
+    def execute_path(self, path, complete_grid, path_coord):
+        explored = 0
+        for node in path:
+            curr = node.curr_block
+            path_coord.remove(curr)
+            cell = self.cell_info[curr[0]][curr[1]]
+            to_ret = None
+            bump = False
+
+            # check if path is open
+            if complete_grid.gridworld[cell.x][cell.y] == 0:
+                # sense Agent's surroundings to determine number of blocks around
+                self.sense_neighbors(cell, complete_grid)
+                # update our knowledge of blocked nodes
+                self.discovered_grid.update_grid_obstacle(curr, 0)
+                if not cell.visited:
+                    self.equations.add(cell)
+                # return the last node
+                to_ret = node
+
+            else:
+                self.discovered_grid.update_grid_obstacle(curr, 1)
+                # return the parent and tell the gridworld to find a new path
+                to_ret = node.parent_block
+                # set bump to true to indicate we bumped into an obstacle
+                bump = True
+
+            # mark the cell as visited
+            cell.visited = True
+            # mark cell as a confirmed value because it was visited
+            cell.confirmed = True
+            # use the new info to draw conclusions about neighbors
+            new_confirmed_cells = self.update_neighbors(cell)
+
+            # if we bumped into an obstacle, then leave the execution
+            if bump:
+                return to_ret, explored
+            explored += 1
+            # check if any new confirmed cells introduce block in your path
+            if self.check_block_in_path(path_coord, new_confirmed_cells):
+                return to_ret, explored
+
+        return path[-1], explored
+
+    def update_neighbors(self, cell):
+        # set that contains any cell that's been confirmed
+        new_confirmed_cells = set()
+
+        # add the neighbors of the current cell and itself to the list
+        neighbors = list(cell.get_neighbors(self.cell_info, self.dim))
+        neighbors.append(cell)
+
+        # loop through the cells and keep looping until neighbors is empty
+        while neighbors:
+            curr_cell = neighbors.pop()
+            self.update_equation(curr_cell)
+
+            # if the cell was visited and we have the block sense, infer and add to knowledge base
+            if curr_cell.visited and curr_cell.block_sense != -1:
+                updated_cells = self.update_knowledgebase(curr_cell)
+                new_confirmed_cells.update(updated_cells)
+
+                # update all of the neighbors neighbors by adding those to the set
+                for n in updated_cells:
+                    neighbors.extend(n.get_neighbors(self.cell_info, self.dim))
+                    neighbors.append(n)
+
+        return new_confirmed_cells
+
+    """
+    This method returns the number of blocked neighbors a given cell has
+    @param cell: the current cell in the path traversal
+    @param complete_grid: grid with the obstacles
+    """
+
+    def sense_neighbors(self, cell, complete_grid):
+        num_sensed = 0
+        neighbors = cell.get_neighbors(self.cell_info, self.dim)
+
+        # loop through the neighbors to be checked and take the sum (1 is block)
+        num_sensed = sum(complete_grid.gridworld[n.x][n.y] for n in neighbors)
+
+        # return the number of obstacles surrounding the current node
+        cell.block_sense = num_sensed
+        if cell.right_side == -1:
+            cell.right_side = num_sensed
+
+    """
+      Implement systems of equations to enhance inferences, do these equations change?
+      As in are we supposed to store the equations as information/variables for the cell?
+      Or do we create and attempt to solve the system every time we make new inferences?
+    """
+
+    def update_knowledgebase(self, cell):
+
+        updated_cells = []
+
+        # get the neighbors and check to see which are blockers
+        neighbors = cell.get_neighbors(self.cell_info, self.dim)
+
+        # See if an inference can be made with updated equation
+        updated_cells.extend(self.make_inference(cell.equation, cell.right_side))
+
+        # solve a system of equations
+        for i, n in enumerate(neighbors):
+            # ignore the neighbor if we have not visited
+            if n.visited and n.block_sense != -1:
+                # check if we can solve an equation by itself
+                updated_cells.extend(self.make_inference(n.equation, n.right_side))
+                # try to subtract all the combinations of the cells
+                for c in self.equations:
+                    if n != c and c.visited and c.block_sense != -1:
+                        updated_cells.extend(self.subtract(n, c))
+
+        return updated_cells
+
+    """
+    Subtracts any two given equations
+    @return list: list of cells that have been updated
+    """
+
+    def subtract(self, cell1, cell2):
+
+        result = cell1.equation.symmetric_difference(cell2.equation)
+        right_hand_side = abs(cell1.right_side - cell2.right_side)
+
+        # set negative values for subtracted equations
+        if cell1.right_side >= cell2.right_side:
+            for r in result:
+                if r in cell2.equation:
+                    result.remove(r)
+                    result.add((r[0], r[1], -1))
+        else:
+            for r in result:
+                if r in cell1.equation:
+                    result.remove(r)
+                    result.add((r[0], r[1], -1))
+
+        # return the updated cells if inferences were made
+        return self.make_inference(result, right_hand_side)
+
+    """
+    Returns the list of updated cells
+    """
+
+    def make_inference(self, equation, blocks):
+        updated_cells = []
+
+        # calculates the number of positive tuples
+        positive = len(list(filter(lambda x: (x[2] > 0), equation)))
+
+        # if we know all empty cells, update the other cells to be blocked
+        if blocks == 0 and positive == len(equation):
+            for cord in equation:
+                if not self.cell_info[cord[0]][cord[1]].confirmed:
+                    self.discovered_grid.update_grid_obstacle((cord[0], cord[1]), 0)
+                    self.cell_info[cord[0]][cord[1]].confirmed = True
+                    updated_cells.append(self.cell_info[cord[0]][cord[1]])
+
+        # if the positive cordinates is the same as blocks then positives are all ones
+        if positive == blocks:
+            for cord in equation:
+                if not self.cell_info[cord[0]][cord[1]].confirmed:
+                    updated_cells.append(self.cell_info[cord[0]][cord[1]])
+                    if cord[2] > 0:
+                        self.discovered_grid.update_grid_obstacle((cord[0], cord[1]), 1)
+                    else:
+                        self.discovered_grid.update_grid_obstacle((cord[0], cord[1]), 0)
+                    self.cell_info[cord[0]][cord[1]].confirmed = True
+
+        return updated_cells
+
+    def update_equation(self, cell):
+        cell.equation = {
+            (cell.x + n[0], cell.y + n[1], 1)
+            for n in cell.neighbor_directions
+            if 0 <= cell.x + n[0] < self.dim
+            and 0 <= cell.y + n[1] < self.dim
+            and not self.cell_info[cell.x + n[0]][cell.y + n[1]].confirmed
+        }
+        confirm_blocks = 0
+        neighbors = cell.get_neighbors(self.cell_info, self.dim)
+        for n in neighbors:
+            if self.discovered_grid.gridworld[n.x][n.y] == 1:
+                confirm_blocks += 1
+        if cell.block_sense != -1:
+            cell.right_side = cell.block_sense - confirm_blocks
+
+    def check_block_in_path(self, path_coord, new_confirmed_cells):
+        for cell in new_confirmed_cells:
+            if self.discovered_grid.gridworld[cell.x][cell.y] == 1:
+                if (cell.x, cell.y) in path_coord:
+                    return True
+
+        return False
+```
+**A Star Algorithm**
+```python
+# solves gridworld using A* algorithm
+from priority_queue import Priority_Queue
+from fringe_node import Fringe_Node
+
+# returns the path found as a list of tuples
+def path_planner(start, latest_block, grid, dim, heuristic):
+    # contains nodes to be discovered
+    fringe = Priority_Queue()
+
+    # contains nodes that were visited
+    closed = {}
+
+    # total number of nodes popped from fringe for processing
+    cells_processed = 0
+
+    # create the first fringe node
+    start_node = Fringe_Node((start[0], start[1]), latest_block, heuristic((0, 0), (dim-1, dim-1)), 0)
+    fringe.enqueue(start_node)
+
+    # loop through the unvisited nodes
+    while len(fringe.queue) > 0:
+        curr = fringe.de_queue()
+        closed[curr.curr_block] = curr
+        cells_processed += 1
+
+        # Check if the goal node was popped
+        if curr.curr_block == (dim-1, dim-1):
+            #print("Path Found, Processed %s cells" % cells_processed)
+            path = []
+            path_coord = set()
+            # we reached the end trace the path back to start
+            x = curr
+            while x.curr_block != start:
+                path.append(x)
+                path_coord.add(x.curr_block)
+                x = x.parent_block
+            path.append(x)
+            path_coord.add(x.curr_block)
+            path.reverse()
+            return (path, cells_processed, path_coord)
+        else:
+            check_neighbors(grid, dim, heuristic, curr, fringe, closed)
+
+    #print("No Path Found")
+    return ([], cells_processed, set())
+        
+            
+def check_neighbors(grid, dim, heuristic, curr_node, fringe, closed):
+    curr_coord = curr_node.curr_block
+    # check the neighbor above the block
+    if curr_coord[0] - 1 >= 0:
+        if grid.gridworld[curr_coord[0] - 1][curr_coord[1]] != 1 and not (curr_coord[0] - 1, curr_coord[1]) in closed:
+            new_node = Fringe_Node((curr_coord[0] - 1, curr_coord[1]), curr_node, curr_node.dist_from_start + 1 + heuristic((curr_coord[0] - 1, curr_coord[1]), (dim-1, dim-1)), curr_node.dist_from_start + 1)
+            fringe.enqueue(new_node)
+    # check the neighbor below the block
+    if curr_coord[0] + 1 < dim:
+        if grid.gridworld[curr_coord[0] + 1][curr_coord[1]] != 1 and not (curr_coord[0] + 1, curr_coord[1]) in closed:
+            new_node = Fringe_Node((curr_coord[0] + 1, curr_coord[1]), curr_node, curr_node.dist_from_start + 1 + heuristic((curr_coord[0] + 1, curr_coord[1]), (dim-1, dim-1)), curr_node.dist_from_start + 1)
+            fringe.enqueue(new_node)
+    # check the neighbor left of the block
+    if curr_coord[1] - 1 >= 0:
+        if grid.gridworld[curr_coord[0]][curr_coord[1] - 1] != 1 and not (curr_coord[0], curr_coord[1] - 1) in closed:
+            new_node = Fringe_Node((curr_coord[0], curr_coord[1] - 1), curr_node, curr_node.dist_from_start + 1 + heuristic((curr_coord[0], curr_coord[1] - 1), (dim-1, dim-1)), curr_node.dist_from_start + 1)
+            fringe.enqueue(new_node)
+    # check the neighbor right of the block
+    if curr_coord[1] + 1 < dim:
+        if grid.gridworld[curr_coord[0]][curr_coord[1] + 1] != 1 and not (curr_coord[0], curr_coord[1] + 1) in closed:
+            new_node = Fringe_Node((curr_coord[0], curr_coord[1] + 1), curr_node, curr_node.dist_from_start + 1 + heuristic((curr_coord[0], curr_coord[1] + 1), (dim-1, dim-1)), curr_node.dist_from_start + 1)
+            fringe.enqueue(new_node)
+```
+**Repeated A* Algo**
+```python
+def solver(dim, prob, complete_grid=None):
+
+    # create a gridworld
+    if not complete_grid:
+        complete_grid = Gridworld(dim, prob, False)
+        # complete_grid.print()
+        # print()
+
+    # json output
+    data = {"Agent 1": {}, "Agent 2": {}, "Agent 3": {}, "Agent 4": {}}
+
+    # create agents
+    agents = [Agent_1(dim), Agent_2(dim), Agent_3(dim), Agent_4(dim)]
+    agent_counter = 0
+
+    for agent_object in agents:
+        agent_counter += 1
+        # total number of cells explored
+        trajectory_length = 0
+        # total number of cells processed
+        total_cells_processed = 0
+        # final path which points to last node
+        final_path = None
+        # number of times A* was repeated
+        retries = 0
+        # status of completion
+        complete_status = False
+
+        # perform repeated A* with the agent
+        starting_time = time()
+        # start planning a path from the starting block
+        new_path, cells_processed, path_coord = path_planner(
+            (0, 0), final_path, agent_object.discovered_grid, dim, manhattan
+        )
+        total_cells_processed += cells_processed
+        # while A* finds a new path
+        while len(new_path) > 0:
+            retries += 1
+            # execute the path
+            last_node, explored = agent_object.execute_path(new_path, complete_grid, path_coord)
+            trajectory_length += explored
+            final_path = last_node
+            # get the last unblocked block
+            last_block = (0, 0)
+            last_unblock_node = None
+            if last_node:
+                last_block = last_node.curr_block
+                last_unblock_node = last_node.parent_block
+            # check if the path made it to the goal node
+            if last_block == (dim - 1, dim - 1):
+                complete_status = True
+                break
+            # create a new path from the last unblocked node
+            new_path, cells_processed, path_coord = path_planner(
+                last_block,
+                last_unblock_node,
+                agent_object.discovered_grid,
+                dim,
+                manhattan,
+            )
+            total_cells_processed += cells_processed
+
+        # Update discovered grid to fill unknowns with 1
+        for i in range(dim):
+            for j in range(dim):
+                curr = agent_object.discovered_grid.gridworld[i][j]
+                if curr == 9:
+                    agent_object.discovered_grid.update_grid_obstacle((i,j), 1)
+
+        # Get length of final path when running A* on the final discoverd_grid
+        shortest_trajectory = grid_solver(dim, agent_object.discovered_grid)
+
+        completion_time = time() - starting_time
+
+        data["Agent {}".format(agent_counter)] = {"processed": total_cells_processed, "retries": retries, "trajectory": trajectory_length, "shortest_trajectory": shortest_trajectory, "time": completion_time, "completed": complete_status}
+
+        # print("Agent %s Completed in %s seconds" % (agent_counter, completion_time))
+        # print("Agent %s Processed %s cells" % (agent_counter, total_cells_processed))
+        # print("Agent %s Retried %s times" % (agent_counter, retries))
+        # print("Agent %s Has Trajectory Length %s" % (agent_counter, trajectory_length))
+    
+    print(json.dumps(data))
+```
