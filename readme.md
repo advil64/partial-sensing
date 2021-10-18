@@ -146,7 +146,14 @@ Because our Agent 4 can make the same inferences as Agent 3, Agent 3 shouldn’t
 
 **Does Agent 4 infer "everything that is possible to infer" and if not, why not? Can you construct situations where inference is possible, but Agent 4 doesn't infer anything?**
 
-Agent 4 is able to infer everything that is possible to infer based on the equations and inference rules that it needs to follow and it cannot derive any other information. The only way we can confirm that a variable is empty or blocked from an equation is by using the inference rules used by agent 4. It does this by testing every combination of visited cells and the neighbors of all the updated cells and subtracting the two equation sets.
+Agent 4 is able to infer everything that is possible to infer. It does this by testing every combination of visited cells with the neighbors of all the updated cells and subtracting the pair’s two equation sets. Our inference rules for Agent 4 will infer as much as possible from the subtracted equation set. It is not possible to make any more inferences from the equation set because these will result in ambiguous values for our variables.
+
+If the right side is 0 but the left side has a combination of postiive and negative values, it is not possible to determine the values of the variables as there can be multiple combinations of 0 and 1 among the variables to get the right side.
+
+If the right side is greater than 0 but is not equal to the number of positive variables in the left side, it is not possible to determine the values of the variables as there can be multiple combinations of 0 and 1 to get the right side.
+
+Our inference equations were made because they can guarentee the values of the variables and so they can infer all that is possible when we compare every reasonable pair of cells.
+
 
 ## How is Agent 4 implemented?
 Agent 4 is very similar to Agent 3 in that we must either make inferences to find the blockers or bump into them.
