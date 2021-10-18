@@ -205,6 +205,56 @@ right_hand_side = abs(cell1.right_side - cell2.right_side)
 - We can also infer that if the positive coordinates are the same as the number of blocks that all the cells at the positive coordinates must be blocks and the negative ones must be open.
 - Once we make those inferences and update the discovered gridworld, we can go back and append those cells and its neighbors to have their equations updated.
 
+## Graphs and Analysis
+Agent 1 = The 4-Neighbor Agent
+
+Agent 2 = The Blindfolded Agent
+
+Agent 3 = The Example Inference Agent
+
+Agent 4 = Our Own Inference Agent
+
+![Plot](images/prob_trajectory3.png)
+When observing the general trend of all the Agents as density increases, we noticed that all Agents had an increase in trajectory as density increases. We expected this because as density increases, the chances of running into a block (obstacle) while executing the path also increases. Whenever we run into a block, we must replan to move around the block which increases our trajectory. An increase in density will also increase our chances of travelling to a deadend which will also increase our trajectory as we backtrack.
+
+When comparing Agents 3 and 4 with Agent 2, we noticed a significant increase in performance. We expected this because Agents 3 and 4 have access to the same information as Agent 2 and more. This means Agents 3 and 4 must be at least as good as Agent 2. However, we also have the ability to sense how many of our neighbors are blocks in Agents 3 and 4 which gives us more information. Using this partial information along with the inferences we make, we can discover more of our discovered grid as we move along. This allows us to plan better paths in Agents 3 and 4 which decreases our trajectory as we will run into less blocks and deadends. We also noticed that as density increases, the improvement increases as well. This is also expected because smaller densities mean smaller chances of running into blocks. More knowledge of the grid becomes more useful as density increases because we can replan better paths when we run into obstacles.
+
+When comparing Agents 3 and 4 with Agent 1, we noticed they don’t perform as well as Agent 1. An explanation for this could be that having less and guaranteed knowledge is better than having more but not guaranteed knowledge. After all, if we can’t make much inferences in Agents 3 and 4, we won’t discover many neighbors compared to Agent 1 which will always discover at most 4 neighbors. Thus, this guaranteed knowledge may help discover the grid better than the partial knowledge, especially early in the process. Agents 3 and 4 may suffer from the fact that a few cells may need to be visited before they can infer more about their neighbors. Agent 1, however, has knowledge of 4 of their neighbors which may help guide Agent 1 to a better path early on in the process, which leads to better paths towards the goal cell.  We also noticed that as density increases, the difference also seems to increase for a while. This can be expected because being able to discover more of the grid early will give Agent 1 an advantage over Agents 3 and 4 for replanning.
+
+When comparing Agents 3 and 4, we noticed a slight and consistent improvement in Agent 4 compared to Agent 3. We expected Agent 4 to be at least as good as Agent 3 because Agent 4 is able to make the same inferences as Agent 3. Thus, by having more inference capabilities, Agent 4 will be able to discover more of the grid than Agent 3. It’s for this reason that we also expected Agent 4 to beat Agent 3 as Agent 4 can infer more and discover more of the grid. As density increases, the difference between the two increases as Agent 4 will discover more of the grid and be able to plan better paths when it encounters an obstacle using it’s knowledge.
+
+![Plot](images/prob_processed3.png)
+
+Similar to trajectory, when observing the general trend of all the Agents as density increases, we noticed that all Agents had an increase in cells processed as density increases. We expected this because as density increases, the chances of running into a block (obstacle) while executing the path also increases. Whenever we run into a block, we must replan to move around the block. By replanning again, we have to process more cells.
+
+When comparing Agents 3 and 4 with Agent 2, we noticed a significant improvement. As mentioned earlier, Agents 3 and 4 have access to the same info as Agent 2 and more. As a result Agents 3 and 4 will be able to discover more of the grid than Agent 2. This allows Agents 3 and 4 to plan better paths than Agent 2 which decreases the chance of running into a block. By reducing their chances of running into a block compared to Agent 2, they will have to process less cells. We also expected the difference to increase as density increases because an increase in density means a higher chance of running into a block, which gives Agents 3 and 4 an advantage as they can plan better paths than Agent 2 to avoid more blocks.
+
+When comparing Agents 3 and 4 with Agent 1, we noticed that Agent 1 was able to beat Agents 3 and 4. This, again, seems to indicate that getting less and guaranteed information is advantageous over getting more but not guaranteed information. Agent 1 has the advantage of knowing some of its neighbors early in the process which may lead it to a better path early on while Agents 3 and 4 may lead to worser paths while waiting for enough info to infer about their neighbors. Thus, they may encounter blocks more often and have to process more cells when replanning. We expected this difference to increase as density increases because knowing more about the grid early on will be advantageous for Agent 1 when there are more blocks in the grid.
+
+When comparing Agents 3 and 4, we noticed a significant and consistent improvement in Agent 4. Because Agent 4 can make the same inferences and more than Agent 3, Agent 4 is able to discover more of the grid. This gives Agent 4 the advantage to plan paths that allows it to better avoid blocks. By avoiding more blocks, Agent 4 will spend less time planning than Agent 3 and so it will have to process less cells than Agent 3. We can see why the differences increase as density increases because higher densities will increase the chance of running into a block which Agent 4 does better at avoiding compared to Agent 3.
+
+![Plot](images/prob_retries3.png)
+Retries is the number of times A* was repeated to get to the goal node.
+
+Similar to trajectory, when observing the general trend of all the Agents as density increases, we noticed that all Agents had an increase in retries as density increases. We expected this because as density increases, the chances of running into a block (obstacle) while executing the path also increases. And so, we must retry A*.
+
+When comparing Agents 3 and 4 with Agent 2, we noticed a significant improvement. For the same reasons mentioned in trajectory and cells processed, this is expected because Agent 3 and 4 will discover more of the grid than 2 and will thus be able to plan better paths. By planning better paths, we decrease the number of times we must retry our A*.
+
+When comparing Agents 3 and 4 with Agent 1, we again noticed that Agent 1 was able to beat Agents 3 and 4. This confirms our hypothesis from the previous observations that Agent 1 is performing better than Agent 3 and 4 as it encounters less blocks in its path. As mentioned earlier, this may likely be because Agent 1 has access to more info earlier in the process which allows it to travel to better paths from the start compared to Agents 3 and 4.
+
+When comparing Agents 3 and 4, we again noticed a consistent improvement in Agent 4. This confirms our previous observations that Agent 4 is performing better than Agent 3 because it is encountering less blocks. This is only possible because Agent 4 is making more inferences than Agent 3 and is thus able to discover more of the grid. By doing this, Agent 4 is making better paths to avoid obstacles than Agent 3.
+
+![Plot](images/prob_final_path3.png)
+Lastly, we observed the shortest path to the goal in the fully discovered grid.
+We again notice that all Agents increase their trajectory as the density increases. This is expected because higher densities will cause us to encounter more blocks and deadends. This means we have to replan and either move around or backtrack which increases the trajectory.
+
+When comparing Agents 3 and 4 to Agent 2, we noticed a significant improvement. This is because Agents 3 and 4 have discovered more of the grid than Agent 2 due to their ability to sense and make inferences about their neighbors, which discovers more of the grid if they are able to make inferences. As a result, we discovered more of the grid which allowed us to discover a shorter path to the goal in the discovered grid of Agents 3 and 4.
+
+When comparing Agents 3 and 4 to Agent 1, we noticed something interesting. While Agent 1 was able to beat Agents 3 and 4 in every other performance test, Agent 1 was consistently defeated by both 3 and 4 in this test. This seems to confirm our earlier hypothesis that Agent 1 may have an advantage of having access to more information in the beginning while Agents 3 and 4 are still waiting for enough info to make inferences. This is seen as Agent 1 can’t find a shorter path through it’s discovered grid, meaning that it discovered less of the grid than Agents 3 and 4. Thus, the only way Agent 1 can still beat Agents 3 and 4 in the other tests is by knowing more info in the beginning and going along a better path, while Agents 3 and 4 went to more worse paths while waiting for enough info to make inferences.
+
+When comparing Agents 3 and 4 together, we notice a slight and consistent improvement in Agent 4. Agent 4 should perform just as good as Agent 3 because Agent 4 will have discovered more of the grid than Agent 3. The reason for the slight improvement could be that the new inferences made were not significant enough to consistently be able to discover an entirely new and shorter path in the discovered grid.
+
+
 ## Computational Optimizations
 In Agent 3 and 4, we take multiple steps to minimize computations in order to ensure our Agents run as efficiently as they can.
 
