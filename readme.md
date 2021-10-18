@@ -254,6 +254,9 @@ When comparing Agents 3 and 4 to Agent 1, we noticed something interesting. Whil
 
 When comparing Agents 3 and 4 together, we notice a slight and consistent improvement in Agent 4. Agent 4 should perform just as good as Agent 3 because Agent 4 will have discovered more of the grid than Agent 3. The reason for the slight improvement could be that the new inferences made were not significant enough to consistently be able to discover an entirely new and shorter path in the discovered grid.
 
+**Overall Overview of Agent 3 and 4**
+Overall, Agent 4 does seem to perform better than Agent 3. However, although we do see a consistent improvement in Agent 4 over Agent 3, the improvement is usually slightly better when considering trajectory length, number of retries, and the shortest path in the discovered grid. The extra inferences in Agent 4 does help improve the performance; however, it is not a very large improvement. This could be because we need to visit the right combination of cells and paths to be able to take advantage of all the inference potential that Agent 4 has. It could also be that whenever Agent 4 discovers something Agent 3 doesn't, it isn't too significant of a change to influence our replanning, except in some cases which allow Agent 4 to beat Agent 3.
+
 
 ## Computational Optimizations
 In Agent 3 and 4, we take multiple steps to minimize computations in order to ensure our Agents run as efficiently as they can.
@@ -818,7 +821,7 @@ def check_neighbors(grid, dim, heuristic, curr_node, fringe, closed):
             new_node = Fringe_Node((curr_coord[0], curr_coord[1] + 1), curr_node, curr_node.dist_from_start + 1 + heuristic((curr_coord[0], curr_coord[1] + 1), (dim-1, dim-1)), curr_node.dist_from_start + 1)
             fringe.enqueue(new_node)
 ```
-**Repeated A* Algo**
+**Repeated A Star Algo**
 ```python
 def solver(dim, prob, complete_grid=None):
 
